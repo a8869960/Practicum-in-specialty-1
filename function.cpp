@@ -12,7 +12,7 @@ int func(char *filename)
     if(!f)
     {
         cout << "Can't open the file " << filename << endl;
-        return -2;
+        return -1;
     }
 
     double current, next;
@@ -47,7 +47,7 @@ int func(char *filename)
     {
         cout << "Wrong input data in " << filename << endl;
         fclose(f);
-        return -1;
+        return -2;
     }
 
     fclose(f);
