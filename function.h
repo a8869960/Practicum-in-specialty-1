@@ -9,11 +9,21 @@ using namespace std;
 int func(char *filename);
 void *process_function(void* fn);
 
-typedef struct _ARGS
+enum class io_status
 {
-    char *filename;
-    int m;
-    int p;
+    success,
+    error_open,
+    error_read,
+    none
+};
 
-    int status;
-} ARGS;
+class Status
+{
+public:
+    char *filename = nullptr;
+    int m = 0;
+    int p = 0;
+
+    int result = 0;
+    io_status status = io_status::none;
+};

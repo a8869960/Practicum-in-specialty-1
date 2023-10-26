@@ -3,38 +3,18 @@
 //
 #include "function.h"
 
-static int total = 0;
-static pthread_mutex_t total_mutex = PTHREAD_MUTEX_INITIALIZER;
-
-void *process_function(void* arg)
-{
-    ARGS *pargs = (ARGS*)arg;
-    pargs->status = 0;
-
-    int s = func(pargs->filename);
-
-    if(s < 0)
-        pargs->status = s;
-    else
-    {
-        pthread_mutex_lock(&total_mutex);
-        total += s;
-        pthread_mutex_unlock(&total_mutex);
-    }
-    return 0;
-}
-
 int main(int ac, char *av[])
 {
     int p = ac - 1;
     pthread_t *threads;
 
-    ARGS *args;
+    Status *args;
 
-    if(!(args = (ARGS*) malloc(p * sizeof(ARGS))))
+    if(!(args = (Status*) malloc(p * sizeof(Status))))
     {
         cout << "Not enough memory.";
-        return -1;
+        free(args);
+        return -3;
     }
 
     //Заполняем аргументы для задач
@@ -48,7 +28,9 @@ int main(int ac, char *av[])
     if(!(threads = (pthread_t*) malloc (p * sizeof(pthread_t))))
     {
         cout << "Not enough memory." << endl;
-        return -2;
+        free(threads);
+        free(args);
+        return -3;
     }
 
     for(int i = 0; i < p; i++)
@@ -56,7 +38,9 @@ int main(int ac, char *av[])
         if(pthread_create(threads + i, 0, process_function, args + i))
         {
             cout << "Cannot create thread " << i << endl;
-            return -2;
+            free(threads);
+            free(args);
+            return -4;
         }
     }
 
@@ -67,17 +51,22 @@ int main(int ac, char *av[])
     }
 
     bool status = true;
+    int res = 0;
     for(int i = 0; i < p; i++)
     {
-        if(args[i].status < 0)
+        if(args[i].status != io_status::success)
+        {
             status = false;
+            break;
+        } else
+            res += args[i].result;
     }
 
     free(threads);
     free(args);
 
     if(status)
-        cout << "Количесво участков постоянсва: " << total << endl;
+        cout << "Количесво участков постоянсва: " << res << endl;
 
     return 0;
 }

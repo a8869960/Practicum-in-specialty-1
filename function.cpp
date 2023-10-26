@@ -56,3 +56,21 @@ int func(char *filename)
 
     return count;
 }
+
+void *process_function(void* arg)
+{
+    Status *st = (Status*)arg;
+
+    int s = func(st->filename);
+
+    if(s == -1)
+        st->status = io_status::error_open;
+    else if(s == -2)
+        st->status = io_status::error_read;
+    else
+    {
+        st->result = s;
+        st->status = io_status::success;
+    }
+    return 0;
+}
